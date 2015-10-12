@@ -22,6 +22,7 @@ class java8 {
   case $::operatingsystem {
     debian: {
       include apt
+
       apt::source { 'webupd8team-java':
         location    => 'http://ppa.launchpad.net/webupd8team/java/ubuntu',
         release     => 'precise',
@@ -31,10 +32,18 @@ class java8 {
         include_src => true
       }
 
+      exec { 'apt-update-post-webupd8team-apt-source':
+        command => "/usr/bin/apt-get update",
+        require      => [
+          Apt::Source['webupd8team-java']
+        ],
+       }
+
       package { 'oracle-java8-installer':
         responsefile => '/tmp/java.preseed',
         require      => [
           Apt::Source['webupd8team-java'],
+          Exec['apt-update-post-webupd8team-apt-source'],
           File['/tmp/java.preseed']
         ],
       }
